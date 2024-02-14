@@ -181,7 +181,9 @@ const PostCard = ({ post }) => {
           <div className='w-full h-auto flex items-center justify-center px-[2px]'>
             <div className='w-full h-auto flex items-center justify-start'>
               {/* Profile Icon  */}
-              <img src={userData.profilePicture || fresh} alt={`${userData.username}'s Profile Picture`} loading='lazy' className='w-[42px] h-[42px] ml-2 rounded-full shrink-0 m-1 object-cover'></img>
+              <Link className=' m-1 ml-3 p-0.5' to={`/users/${userData.id}`}>
+               <img src={userData.profilePicture || fresh} alt={`${userData.username}'s Profile Picture`} loading='lazy' className='w-[42px] h-[42px] rounded-full shrink-0 object-cover'></img>
+              </Link>
               <div className=' w-full flex items-start justify-center flex-col'>
                 <Link to={`/users/${userData.id}`} className='w-auto flex items-center gap-x-1 justify-center h-auto p-1 text-slate-700 dark:text-slate-300 pb-0 md:text-base'>
                   {userData.username} {userData.isVerified && <span class="material-symbols-outlined text-lg bg-white rounded-full w-3 h-3 flex items-center justify-center text-blue-500">
