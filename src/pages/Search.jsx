@@ -33,7 +33,7 @@ const Search = () => {
   const [yearMsg, setyearMsg] = useState('')
 
   useEffect(() => {
-    document.title = 'FUBK PQ Hub - Search'
+    document.title = 'Search'
     inpRef.current.focus();
   }, [document.title])
 

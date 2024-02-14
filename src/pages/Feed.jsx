@@ -90,7 +90,7 @@ const Feed = () => {
 
 
   useEffect(() => {
-    document.title = 'FUBK PQ Hub - Feed';
+    document.title = 'Feed';
     setlinkFrom('/feed')
     const fetchUserData = async () => {
       try {

@@ -15,7 +15,7 @@ const ResetPassword = () => {
         window.scrollTo(0, 0);
     }, []);
     useEffect(() => {
-        document.title = 'FUBK PQ Hub - Reset Password'
+        document.title = 'Reset Password'
         const AuthCheck = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setUser(user)

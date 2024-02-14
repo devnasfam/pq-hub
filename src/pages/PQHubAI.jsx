@@ -93,7 +93,7 @@ const PQHubAI = () => {
 
   //https://WellinformedHeavyBootstrapping.yasirmecom.repl.co/ask?question=hello
   useEffect(() => {
-    document.title = 'FUBK PQ Hub - AI Chatbot';
+    document.title = 'AI Chatbot';
 
     const fetchData = async () => {
       try {
@@ -174,8 +174,6 @@ const PQHubAI = () => {
                   {msg.text}
                   {msg.role === 'ai' && <FontAwesomeIcon icon={faHandsBubbles} className=' ml-1' />}
                 </div>
-                {/* Time */}
-                <div className=' self-end text-[10px] text-slate-200 p-1'>{TimeAgo(msg.date)}</div>
               </div>
             </li>
             {msg.role === 'user' && <img src={userPhoto} className=' w-[40px] h-[40px] -mt-0.5 rounded-full self-start' alt="" />}

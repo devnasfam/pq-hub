@@ -2,25 +2,22 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleLeft, faAngleRight, faBook, faCloudDownloadAlt, faDownload, faHeart, faIdBadge, faShare, faWarning } from '@fortawesome/free-solid-svg-icons'
 import fresh from '../assets/user.png'
-import pq from '../assets/pq.jpg'
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
 import { db } from '../firebase/firebaseService'
 import { TimeAgo } from '../TimeAgo'
 import { MyAppContext } from '../AppContext/MyContext'
 import { faBookmark } from '@fortawesome/free-regular-svg-icons'
+import { Link } from 'react-router-dom'
 
 const PostCard = ({ post }) => {
 
   const { user } = useContext(MyAppContext)
-  const [like, setLikes] = useState(0)
   const [isLiked, setIsliked] = useState(false)
-  const [ishowed, setIshowed] = useState(false);
   const [imgSlideCount, setImgSideCount] = useState(0)
   const { createdAt, examType, examYear, images, isPrivate, likes, profilePicture, DocId, userId, id, userName } = post
   const [userData, setUserdata] = useState([]);
   const [isbookMark, setIsBookmark] = useState(false);
   const [isHeart, setisHeart] = useState(false)
-  const [url, seturl] = useState('')
 
   const [likeCount, setLikeCount] = useState(likes || 0);
   const [localLikeCount, setLocalLikeCount] = useState(likeCount);
@@ -42,13 +39,29 @@ const PostCard = ({ post }) => {
         console.error('Error checking user liked:', error);
       }
     };
+    const checkIsbookMark = async () => {
+      try {
+        const currentUserID = user.uid;
+        const userRef = doc(db, 'Users', currentUserID);
+        const userSnapshot = await getDoc(userRef);
+
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          const bookMarks = userData.bookMarks || [];
+          const docAlreadyBookMarked = bookMarks.includes(DocId);
+          setIsBookmark(docAlreadyBookMarked);
+        }
+      } catch (error) {
+        console.error('Error checking user liked:', error);
+      }
+    };
+    checkIsbookMark()
     checkUserLiked();
   }, [DocId]);
 
   const handleLike = async () => {
     const postRef = doc(db, 'Posts', DocId);
     const currentUserID = user.uid;
-
     try {
       // Update local like count immediately
       if (!isLiked) {
@@ -79,7 +92,7 @@ const PostCard = ({ post }) => {
       if (!isLiked) {
         setLocalLikeCount(localLikeCount + 1);
       }
-      // Toggle like status
+      // Toggle like status      
       setIsliked(true);
       setisHeart(true)
       setTimeout(() => {
@@ -106,9 +119,15 @@ const PostCard = ({ post }) => {
   const bookMark = async () => {
     try {
       const userRef = doc(db, 'Users', user && user.uid);
-      const docSnapshot = await updateDoc(userRef, {
-        bookMarks: arrayUnion(DocId)
-      })
+      if(!isbookMark){
+        await updateDoc(userRef, {
+          bookMarks: arrayUnion(DocId)
+        })
+      }else{
+        await updateDoc(userRef, {
+          bookMarks: arrayRemove(DocId)
+        })
+      }
       setIsBookmark((prev) => !prev);
     } catch (error) {
       console.log(error)
@@ -133,13 +152,25 @@ const PostCard = ({ post }) => {
     fetchUserData();
   }, [userId])
 
-  useEffect(() => {
-    const downloadImage = async () => {
-      const blob = images[imgSlideCount];
-       seturl(images[imgSlideCount])
-    };
-    downloadImage();
-  }, [images, imgSlideCount]);
+  const handleDownload = () => {
+    if (images.length > 0 && imgSlideCount >= 0 && imgSlideCount < images.length) {
+      // Create a blob from the image data
+      const blob = new Blob([images[imgSlideCount]]);
+
+      // Create a temporary anchor element
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `image_${imgSlideCount}.jpg`; // Specify the filename for download
+
+      // Programmatically trigger the click
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+  };
 
   return (
     <>
@@ -152,11 +183,11 @@ const PostCard = ({ post }) => {
               {/* Profile Icon  */}
               <img src={userData.profilePicture || fresh} alt={`${userData.username}'s Profile Picture`} loading='lazy' className='w-[42px] h-[42px] ml-2 rounded-full shrink-0 m-1 object-cover'></img>
               <div className=' w-full flex items-start justify-center flex-col'>
-                <div className='w-auto flex items-center gap-x-1 justify-center h-auto p-1 text-slate-700 dark:text-slate-300 pb-0 md:text-base'>
+                <Link to={`/users/${userData.id}`} className='w-auto flex items-center gap-x-1 justify-center h-auto p-1 text-slate-700 dark:text-slate-300 pb-0 md:text-base'>
                   {userData.username} {userData.isVerified && <span class="material-symbols-outlined text-lg bg-white rounded-full w-3 h-3 flex items-center justify-center text-blue-500">
                     verified
                   </span>}
-                </div>
+                </Link>
                 <div className='text-xs md:text-sm text-slate-500 dark:text-slate-400 ml-2'>{TimeAgo(createdAt.toDate().toLocaleString())}</div>
               </div>
             </div>
@@ -169,7 +200,7 @@ const PostCard = ({ post }) => {
           {/* Post Images  */}
           <div className='w-full relative'>
             <div className={`${isHeart ? ' scale-100 ' : ' scale-0'} duration-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`}>
-              <FontAwesomeIcon className=' text-7xl text-red-600' icon={faHeart} />
+              <FontAwesomeIcon className=' text-7xl text-red-500' icon={faHeart} />
             </div>
             <img src={images[imgSlideCount]} alt={`${examType} - ${examYear}`} onDoubleClick={HandleDoubleTapLike} loading='lazy' className='w-full h-[350px] transition-all duration-300 object-cover rounded-md' />
             {images.length > 1 && <div className=' w-8 h-8 absolute top-0 right-0 p-3 bg-[rgba(0,0,0,.4)] text-white rounded-full text-xs flex items-center justify-center m-1'>{`${imgSlideCount + 1}/${images.length}`}</div>}
@@ -187,9 +218,7 @@ const PostCard = ({ post }) => {
             </div>
             {/* Download  */}
             <div className=' w-full flex items-center justify-end gap-x-2 p-3'>
-              <a href={url} download>
-                <FontAwesomeIcon className=' p-2 -mb-1 cursor-pointer' icon={faDownload} />
-              </a>
+                <FontAwesomeIcon onClick={handleDownload} className=' p-2 -mb-1 cursor-pointer' icon={faDownload} />
               <FontAwesomeIcon onClick={bookMark} className={`${isbookMark ? ' bg-white text-slate-700' : ''} rounded-md py-1.5 p-2 cursor-pointer`} icon={faBookmark} />
               <FontAwesomeIcon className=' p-2 cursor-pointer' icon={faShare} />
             </div>

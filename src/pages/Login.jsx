@@ -129,7 +129,7 @@ const Login = () => {
 
   const navigate = useNavigate()
   useEffect(() => {
-    document.title = 'FUBK PQ Hub - Log In'
+    document.title = 'Log In'
     const AuthCheck = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user)

@@ -29,7 +29,7 @@ const EditProfile = () => {
     }, []);
 
     useEffect(() => {
-        document.title = 'FUBK PQ Hub - Edit Profile'
+        document.title = 'Edit Profile'
         const fetchUserData = async () => {
             try {
                 const userRef = doc(db, "Users", user.uid);

@@ -166,7 +166,7 @@ const Footer = () => {
               <FontAwesomeIcon className="px-2" icon={faUser} />
               Follow Us
             </h2>
-            <p className="text-slate-300 p-2">
+            <p className="text-slate-300 p-2 md:px-4">
               Connect with us for a richer academic experience.
             </p>
             <ul className="text-slate-200 ml-2 py-3 pt-1">

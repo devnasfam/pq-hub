@@ -12,6 +12,8 @@ import Contributions from './pages/Contributions'
 import PQHubAI from './pages/PQHubAI'
 import Search from './pages/Search'
 import Chats from './pages/Chats'
+import savedPastQ from './pages/savedPastQ'
+import userProfile from './pages/userProfile'
 
 const App = () => {
   return (
@@ -29,8 +31,10 @@ const App = () => {
           <Route path='/profile' Component={Profile} />
           <Route path='/profile/edit' Component={EditProfile} />
           <Route path='/profile/my-contributions' Component={Contributions} />
+          <Route path='/profile/saved' Component={savedPastQ} />
           <Route path='/ai-chatbot' Component={PQHubAI} />
           <Route path='/chats' Component={Chats} />
+          <Route path='/users/:userId' Component={userProfile} />
         </Routes>
       </Router>
     </div>

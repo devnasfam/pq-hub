@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useLayoutEffect, useState } 
 import Navigations from '../components/Navigations'
 import TopNav from '../components/TopNav'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faCheckCircle, faInfoCircle, faSpinner, faSquareShareNodes, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft, faBookmark, faCheckCircle, faInfoCircle, faSpinner, faSquareShareNodes, faTrash } from '@fortawesome/free-solid-svg-icons'
 import useCheckAuth from './customHooks/useCheckAuth'
 import { MyAppContext } from '../AppContext/MyContext'
 import { Link, useNavigate } from 'react-router-dom'
@@ -11,7 +11,7 @@ import { db } from '../firebase/firebaseService'
 import { collection, deleteDoc, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import { faFaceSadTear } from '@fortawesome/free-regular-svg-icons'
 
-const Contributions = () => {
+const savedPastQ = () => {
 
   const { user, setUser } = useContext(MyAppContext);
   const [userData, setUserdata] = useState([]);
@@ -27,12 +27,10 @@ const Contributions = () => {
 
   const fetchPosts = async () => {
     try {
-      const postsCollection = query(collection(db, 'Posts'), where("userId", "==", user.uid));
-      const snapshot = await getDocs(postsCollection);
-      const postsData = []
-      snapshot.forEach((doc) => {
-        postsData.push(doc.data());
-      })
+      const postsCollection = doc(db,'Users',user.uid);
+      const snapshot = await getDoc(postsCollection);
+      const postsData = snapshot.data();
+      const docRef = collection(db, 'Posts', postsData.bookMark)
       return postsData;
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -40,7 +38,7 @@ const Contributions = () => {
     }
   };
   useEffect(() => {
-    document.title = 'My Contributions'
+    document.title = 'Saved Past Q'
     const fetchUserData = async () => {
       try {
         const userRef = doc(db, "Users", user && user.uid);
@@ -100,8 +98,8 @@ const Contributions = () => {
               <Link to='/profile'>
                 <FontAwesomeIcon icon={faArrowLeft} className='mr-5 cursor-pointer p-2' />
               </Link>
-              <FontAwesomeIcon icon={faSquareShareNodes} />
-              <h2 className='text-lgtext-white ml-3 font-medium'>My Contributions</h2>
+              <FontAwesomeIcon icon={faBookmark} />
+              <h2 className='text-lgtext-white ml-3 font-medium'>Saved Past Questions</h2>
             </div>
           </div>
         </>
@@ -171,8 +169,7 @@ const Contributions = () => {
           {!loading && posts.length < 1 &&
             <div className=' w-full p-5 dark:text-slate-300 text-center'>
               <FontAwesomeIcon className=' px-2' icon={faFaceSadTear} />
-              No Contributions made yet! Please contribute on the Contribute Page to help others and track your
-              contributions here.
+              No saved past questions here!
             </div>
           }
         </div>
@@ -182,4 +179,4 @@ const Contributions = () => {
   )
 }
 
-export default Contributions
+export default savedPastQ

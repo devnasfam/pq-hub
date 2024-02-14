@@ -145,7 +145,7 @@ const Contribue = () => {
   };
 
   useEffect(() => {
-    document.title = 'FUBK PQ Hub - Contribute'
+    document.title = 'Contribute'
     const fetchUserData = async () => {
       try {
         const userRef = doc(db, "Users", user && user.uid);

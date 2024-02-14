@@ -23,7 +23,7 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
-    document.title = 'FUBK PQ Hub - My Profile'
+    document.title = 'My Profile'
     const fetchUserData = async () => {
       try {
         const userRef = doc(db, "Users", user && user.uid);
@@ -105,6 +105,13 @@ const Profile = () => {
               <div className='flex items-center justify-center gap-2'>
                 <FontAwesomeIcon icon={faSquareShareNodes} />
                 <div>My Contributions</div>
+              </div>
+              <FontAwesomeIcon icon={faAngleRight} />
+            </Link>
+            <Link to='/profile/saved' className=' bg-sky-100 shadow-inner dark:bg-slate-900 rounded-xl p-4 hover:bg-blue-500 hover:text-white dark:hover:bg-slate-600 cursor-pointer pl-8 flex items-center justify-between'>
+              <div className='flex items-center justify-center gap-2'>
+                <FontAwesomeIcon icon={faBookmark} />
+                <div>Save Past Questions</div>
               </div>
               <FontAwesomeIcon icon={faAngleRight} />
             </Link>

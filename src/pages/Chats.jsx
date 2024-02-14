@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import TopNav from '../components/TopNav'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faComment, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons'
@@ -21,6 +21,9 @@ const Chats = () => {
     setisShowModal(false)
     setSearchvalue('')
   }
+  useEffect(() => {
+    document.title = 'Chats'
+  }, [document.title])
   return (
     <div className=' w-full h-auto pt-[74px] pb-[75px]'>
       <TopNav name={
