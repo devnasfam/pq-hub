@@ -61,3 +61,9 @@ export const Level = [
   { value: "600L", label: "600L" },
 ];
    
+export const Rejects = [
+  {value: "Not a Past Question", label: "Not a Past Question"},
+  {value: "Invalid Material", label: "Invalid Material"},
+  {value: "Low Quality Images", label: "Low Quality Images"},
+  {value: "Inappropriate Content", label: "Inappropriate Content"},
+]

@@ -6,8 +6,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase/firebaseService'
 import { MyAppContext } from '../AppContext/MyContext'
-const Login = () => {
+import toast, { Toaster } from 'react-hot-toast'
 
+const Login = () => {
+  const [sending, setSending] = useState(false);
   const { setUser } = useContext(MyAppContext)
 
   const [signInDetails, setSignInDetails] = useState({
@@ -15,14 +17,7 @@ const Login = () => {
     password: '',
   })
 
-  const [errors, setErrors] = useState({
-    general: ''
-  })
-
   const [isopen, setIsopen] = useState(false)
-
-  const [success, setSuccess] = useState(false);
-  const [successMsg, setsuccessMsg] = useState('')
 
   const HandleShowPassword = () => {
     setIsopen((prev) => !prev)
@@ -54,78 +49,66 @@ const Login = () => {
       ...prevDetails,
       [name]: value
     }))
-    setErrors((prevError) => ({
-      ...prevError,
-      general: '',
-      [name]: ''
-    }))
   }
 
-  const HandleLogin = async () => {
+  const HandleLoginCheck = async () => {
     try {
       if (signInDetails.email == "" || signInDetails.email == null) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          general: errorMessages.email.required
-        }))
+        toast.error(errorMessages.email.required, { duration: 2000 })
       }
       else if (signInDetails.email.indexOf('@') < 1 || signInDetails.email.lastIndexOf(".") < signInDetails.email.indexOf("@") + 2 || signInDetails.email.lastIndexOf(".") + 2 >= signInDetails.email.length) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          general: errorMessages.email.invalidFormat
-        }))
+        toast.error(errorMessages.email.invalidFormat, { duration: 2000 })
       }
       else if (signInDetails.password == "" || signInDetails.password == null) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          general: errorMessages.password.required
-        }))
+        toast.error(errorMessages.password.required, { duration: 2000 })
       }
       else if (signInDetails.password.length < 6) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          general: errorMessages.password.invalidFormat
-        }))
+        toast.error(errorMessages.password.invalidFormat, { duration: 2000 })
       } else {
         const email = signInDetails.email
         const password = signInDetails.password
-        setsuccessMsg('Logging in...')
+        const loadToast = toast.loading('Logging in...', { duration: Infinity })
+        setSending(true);
         try {
           const loginCredential = await signInWithEmailAndPassword(auth, email, password)
           const regUser = loginCredential.user;
-          btnRef.current.disabled = true
-          setSuccess(true)
           setUser(regUser)
-          setsuccessMsg('')
+          toast.success('Login Successfull', { duration: 2000, id: loadToast })
         } catch (error) {
-          setsuccessMsg('')
+          setSending(false)
           if (error.code === 'auth/user-not-found') {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              general: 'User not found. Please register to create an account'
-            }))
+            toast.error('User not found. Please register to create an account', { duration: 2000, id: loadToast })
           } else if (error.code === 'auth/invalid-credential') {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              general: 'Incorrect password/email. Please try another or reset your password'
-            }))
-          } else {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              general: error
-            }))
+            toast.error('Incorrect password/email. Please try another or reset your password', { duration: 2000, id: loadToast })
+          } else if (error.code === 'auth/network-request-failed') {
+            toast.error('Network error', { duration: 2000, id: loadToast })
           }
-          setSuccess(false)
+          else {
+            toast.error(error.message, { duration: 2000, id: loadToast })
+          }
         }
       }
     } catch (error) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: error
-      }))
+      toast.error(error.message, { duration: 2000 })
       console.log(error)
     }
   }
+
+  const HandleLogin = async () => {
+    await HandleLoginCheck()
+  }
+
+  useEffect(() => {
+    const handleEnter = async (e) => {
+      if (e.key === 'Enter') {
+        await HandleLoginCheck();
+      }
+    }
+    window.addEventListener('keypress', handleEnter);
+    return () => {
+      window.removeEventListener('keypress', handleEnter);
+    }
+  }, [signInDetails])
 
   const navigate = useNavigate()
   useEffect(() => {
@@ -135,7 +118,7 @@ const Login = () => {
         setUser(user)
         setTimeout(() => {
           navigate('/feed')
-        }, 1000)
+        }, 2000)
       }
     })
     return () => AuthCheck();
@@ -144,13 +127,16 @@ const Login = () => {
   return (
     <div className='overflow-hidden w-full min-h-screen'>
       <div className='w-full min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center lg:gap-x-2'>
-      <div className='hidden xl:flex items-start justify-center flex-col gap-1 text-white pl-[20px]'>
+        <div className='hidden xl:flex items-start justify-center flex-col gap-1 text-white pl-[20px]'>
           <h2 className=' w-[50%] text-slate-800 dark:text-slate-100 text-2xl tracking-wider font-bold'>
-          PQ Hub helps you find and share past questions with the students.
+            PQ Hub helps you find and share past questions with the students.
           </h2>
-          <img src={book} loading='lazy' className=' object-cover w-[260px] h-[260px]' alt="PQ Hub Logo" />
+          <div className='w-full relative mt-1 flex items-center justify-start'>
+            <div className=' delay-200 w-[30%] h-[65%] bg-cyan-600/80 shadow-2xl shadow-pink-600 absolute -translate-y-1/2 top-1/2 left-0 rounded-full blur-2xl' />
+            <img src={book} loading='lazy' className=' hover:scale-[1.05] duration-300 object-cover w-[260px] h-[260px] z-10' alt="PQ Hub Logo" />
+          </div>
         </div>
-        <div className='w-[85%] xl:-ml-[220px] sm:w-[65%] md:w-[50%] lg:w-[40%] xl:w-[30%] h-auto p-3 py-9 pt-5 border border-slate-200 dark:border-slate-700 bg-[rgba(255,255,255,.75)] dark:bg-[rgba(30,41,59,.75)] backdrop-blur-md shadow-[10px_10px_10px_rgba(0,0,0,.05)] rounded-lg'>
+        <div className='w-[85%] xl:-ml-[220px] sm:w-[65%] md:w-[50%] lg:w-[40%] xl:w-[30%] h-auto p-3 py-9 pt-5 border border-slate-200 dark:border-slate-800 bg-[rgba(255,255,255,.75)] dark:bg-[rgba(2,6,23,.55)]/30 backdrop-blur-md shadow-[10px_10px_10px_rgba(0,0,0,.05)] rounded-lg'>
           <div className='w-full p-2 text-slate-700 dark:text-white text-xl flex items-center py-3 mb-2 font-bold tracking-wide gap-2 justify-center'>
             Login to your account
             <FontAwesomeIcon icon={faUserGraduate} />
@@ -166,23 +152,13 @@ const Login = () => {
               <FontAwesomeIcon className='text-slate-700 text-lg p-2 mr-1 cursor-pointer' icon={isopen ? faEye : faEyeSlash} onClick={HandleShowPassword} />
 
             </div>
-            {errors &&
-              <div className=' max-w-[70%] -mt-1 my-1 mb-1.5 px-5 h-auto text-center text-red-500 text-base'>
-                <span>{errors.general}</span>
-              </div>
-            }
-            {success &&
-              <div className=' max-w-[70%] -mt-1 my-1 mb-1.5 px-5 h-auto text-center text-green-500 text-base'>
-                <span>Login Successfull!</span>
-              </div>
-            }
-            <button onClick={HandleLogin} ref={btnRef} className='p-2 px-3 shadow bg-blue-500 text-white rounded-md w-[85%] font-medium tracking-wide text-lg outline-none border-none -mt-2'><span>{successMsg || 'Log in'}</span> <FontAwesomeIcon icon={!successMsg ? faSignIn : ''} /></button>
-
+            <button onClick={HandleLogin} ref={btnRef} disabled={sending} className={`${sending ? ' cursor-not-allowed' : ' cursor-pointer'} p-2 px-3 shadow bg-blue-500 text-white rounded-md w-[85%] font-medium tracking-wide text-lg outline-none border-none`}><span>{'Log in'}</span> <FontAwesomeIcon icon={faSignIn} /></button>
             <div className='w-full flex items-center justify-center gap-2 text-slate-900 dark:text-slate-50 text-sm mt-1'>Don't have an account? <Link to='/signup' className='text-slate-700 dark:text-slate-50 font-medium underline'>Sign Up</Link></div>
             <div className='w-full flex items-center justify-center gap-2 text-slate-900 dark:text-slate-50 text-sm mt-1'>Forgot Password? <Link to='/reset-password' className='text-slate-700 dark:text-slate-50 font-medium underline'>Reset </Link></div>
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   )
 }

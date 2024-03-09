@@ -1,36 +1,30 @@
 import React, { useContext, useEffect, useState } from 'react'
 import book from '../assets/openbook.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEnvelope, faEye, faEyeSlash, faListNumeric, faLock, faSignIn, faUserCircle, faUserGraduate, faUserTag } from '@fortawesome/free-solid-svg-icons'
+import { faEnvelope, faEye, faEyeSlash, faListNumeric, faLock, faSignIn, faUserCircle, faUserGraduate } from '@fortawesome/free-solid-svg-icons'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebase/firebaseService'
 import { createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth'
 import { MyAppContext } from '../AppContext/MyContext'
 import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore'
 import { useRef } from 'react'
+import toast, { Toaster } from 'react-hot-toast'
 const SignUp = () => {
 
-  const { user, setUser } = useContext(MyAppContext);
+  const { setUser } = useContext(MyAppContext);
   const [signUpDetails, setSignUpDetails] = useState({
     username: '',
     fullName: '',
     email: '',
     admNumber: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    gender: ''
   })
-
-  const [errors, setErrors] = useState({
-    general: ''
-  })
-
-  const [success, setSuccess] = useState(false);
-  const [successMsg, setsuccessMsg] = useState('')
-
-  const [userData, setUserdata] = useState([]);
 
   const [isopen, setIsopen] = useState(false)
   const [isopen2, setIsopen2] = useState(false)
+  const [sending, setSending] = useState(false)
 
   const passRef = useRef(null)
   const confirmpassRef = useRef(null)
@@ -77,6 +71,9 @@ const SignUp = () => {
       required: 'Confirm your password',
       misMatch: 'Oops! The passwords you entered do no match'
     },
+    gender: {
+      required: 'Please select your gender'
+    }
 
   }
 
@@ -86,111 +83,77 @@ const SignUp = () => {
       ...prevDetails,
       [name]: value
     }))
-    setErrors((prevError) => ({
-      ...prevError,
-      general: '',
-      [name]: ''
-    }))
   }
 
+  const handleGender = (e) => {
+    const { name, value } = e.target;
+    setSignUpDetails(prevDetails => ({
+      ...prevDetails,
+      [name]: value
+    }));
+  };
 
-  const HandleSignUp = async () => {
+  const HandleSignUpCheck = async () => {
 
     if (signUpDetails.username == "" || signUpDetails.username == null) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.usernamee.required
-      }))
+      toast.error(errorMessages.usernamee.required, { duration: 2000 })
     }
     else if (signUpDetails.username.length < 6) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.usernamee.minLenght
-      }))
+      toast.error(errorMessages.usernamee.minLenght, { duration: 2000 })
     }
     else if (signUpDetails.admNumber == "" || signUpDetails.admNumber == null) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.admNumber.required
-      }))
+      toast.error(errorMessages.admNumber.required, { duration: 2000 })
     }
     else if (signUpDetails.admNumber.length < 10 || signUpDetails.admNumber.length > 10) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.admNumber.minLenght
-      }))
+      toast.error(errorMessages.admNumber.minLenght, { duration: 2000 })
     }
     else if (signUpDetails.fullName == "" || signUpDetails.fullName == null) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.fullName.required
-      }))
+      toast.error(errorMessages.fullName.required, { duration: 2000 })
     }
     else if (signUpDetails.fullName.length < 6) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.fullName.minLenght
-      }))
+      toast.error(errorMessages.fullName.minLenght, { duration: 2000 })
     }
     else if (signUpDetails.email == "" || signUpDetails.email == null) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.email.required
-      }))
+      toast.error(errorMessages.email.required, { duration: 2000 })
     }
     else if (signUpDetails.email.indexOf('@') < 1 || signUpDetails.email.lastIndexOf(".") < signUpDetails.email.indexOf("@") + 2 || signUpDetails.email.lastIndexOf(".") + 2 >= signUpDetails.email.length) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.email.invalidFormat
-      }))
+      toast.error(errorMessages.email.invalidFormat, { duration: 2000 })
     }
     else if (signUpDetails.password == "" || signUpDetails.password == null) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.password.required
-      }))
+      toast.error(errorMessages.password.required, { duration: 2000 })
     }
     else if (signUpDetails.password.length < 6) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.password.invalidFormat
-      }))
+      toast.error(errorMessages.password.invalidFormat, { duration: 2000 })
     }
     else if (signUpDetails.confirmPassword == "" || signUpDetails.confirmPassword == null) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.confirmPassword.required
-      }))
+      toast.error(errorMessages.confirmPassword.required, { duration: 2000 })
     }
     else if (signUpDetails.password !== signUpDetails.confirmPassword) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: errorMessages.confirmPassword.misMatch
-      }))
+      toast.error(errorMessages.confirmPassword.misMatch, { duration: 2000 })
+    }
+    else if (!signUpDetails.gender) {
+      toast.error(errorMessages.gender.required, { duration: 2000 })
     } else {
       const usersRef = collection(db, "Users");
-
+      toast.dismiss()
+      const loadToast = toast.loading('Signing up...', { duration: Infinity })
+      setSending(true)
       const usernameSnapshot = await getDocs(query(usersRef, where('username', '==', signUpDetails.username.toLowerCase().trim())));
       if (!usernameSnapshot.empty) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          general: 'Username already exists'
-        }));
+        setSending(false);
+        toast.error('Username already exists!', { duration: 2000, id: loadToast })
         return;
       }
 
       const admNumberSnapshot = await getDocs(query(usersRef, where('admNumber', '==', signUpDetails.admNumber)));
       if (!admNumberSnapshot.empty) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          general: 'Admission number already exists'
-        }));
+        setSending(false);
+        toast.error('Admission number already exists!', { duration: 2000, id: loadToast })
         return;
       }
 
       const email = signUpDetails.email;
       const password = signUpDetails.confirmPassword;
-      setsuccessMsg('Signing up...');
       let department = '';
 
       if (signUpDetails.admNumber.slice(4, 7) === '204') {
@@ -202,9 +165,8 @@ const SignUp = () => {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const regUser = userCredential.user;
-        setSuccess(true);
         setUser(regUser);
-        setsuccessMsg('');
+        toast.success('Sign up successfull!', { duration: 2000, id: loadToast })
         btnRef.current.disabled = true;
         await setDoc(doc(db, "Users", regUser.uid), {
           id: regUser.uid,
@@ -213,20 +175,38 @@ const SignUp = () => {
           email: signUpDetails.email,
           admNumber: signUpDetails.admNumber,
           department: department,
-          profilePicture: ''
+          profilePicture: '',
+          gender:signUpDetails.gender
         });
       } catch (error) {
-        setsuccessMsg('');
+        setSending(false)
         if (error.code === 'auth/email-already-in-use') {
-          setErrors((prevErrors) => ({
-            ...prevErrors,
-            general: 'Email already in use'
-          }));
+          toast.error('Email already in use', { duration: 2000, id: loadToast })
+        } else if (error.code === 'auth/network-request-failed') {
+          toast.error('Network error', { duration: 2000, id: loadToast })
+        } else {
+          toast.error(error.message, { duration: 2000, id: loadToast })
         }
-        setSuccess(false);
       }
     }
   };
+
+  const HandleSignUp = async () => {
+    await HandleSignUpCheck()
+  }
+
+  useEffect(() => {
+    const handleEnter = async (e) => {
+      if (e.key === 'Enter') {
+        await HandleSignUpCheck();
+      }
+    }
+    window.addEventListener('keypress', handleEnter);
+    return () => {
+      window.removeEventListener('keypress', handleEnter);
+    }
+  }, [signUpDetails])
+
   const navigate = useNavigate()
   useEffect(() => {
     document.title = 'Sign Up'
@@ -235,7 +215,7 @@ const SignUp = () => {
         setUser(user)
         setTimeout(() => {
           navigate('/feed')
-        }, 1000)
+        }, 2500)
       }
     })
     return () => AuthCheck();
@@ -248,9 +228,12 @@ const SignUp = () => {
           <h2 className=' w-[50%] text-2xl text-slate-800 dark:text-slate-100 tracking-wider font-bold'>
             PQ Hub helps you find and share past questions with the students.
           </h2>
-          <img src={book} loading='lazy' className=' object-cover w-[260px] h-[260px]' alt="PQ Hub Logo" />
+          <div className='w-full relative mt-1 flex items-center justify-start'>
+            <div className=' delay-200 w-[30%] h-[65%] bg-cyan-600/80 shadow-2xl shadow-pink-600 absolute -translate-y-1/2 top-1/2 left-0 rounded-full blur-2xl' />
+            <img src={book} loading='lazy' className=' hover:scale-[1.05] duration-300 object-cover w-[260px] h-[260px] z-10' alt="PQ Hub Logo" />
+          </div>
         </div>
-        <div className='w-[85%] sm:w-[65%] xl:-ml-[220px] md:w-[50%] lg:w-[40%] xl:w-[30%] h-auto p-3 px-0 py-9 pt-5 border border-slate-200 dark:border-slate-700 bg-[rgba(255,255,255,.75)] dark:bg-[rgba(30,41,59,.75)] backdrop-blur-md shadow-[10px_10px_10px_rgba(0,0,0,.05)] rounded-lg'>
+        <div className='w-[85%] sm:w-[65%] xl:-ml-[220px] md:w-[50%] lg:w-[40%] xl:w-[30%] h-auto p-3 px-0 py-9 pt-5 border border-slate-200 dark:border-slate-800 bg-[rgba(255,255,255,.75)] dark:bg-[rgba(2,6,23,.55)]/30 backdrop-blur-md shadow-[10px_10px_10px_rgba(0,0,0,.05)] rounded-lg'>
           <div className='w-full p-2 tracking-wide text-slate-700 dark:text-white text-xl flex items-center py-3 mb-2 font-bold gap-2 justify-center'>
             Create an account
             <FontAwesomeIcon icon={faUserGraduate} />
@@ -287,22 +270,27 @@ const SignUp = () => {
                 <FontAwesomeIcon className='text-slate-700 text-md p-2 mr-1 cursor-pointer' icon={isopen2 ? faEye : faEyeSlash} onClick={HandleShowPassword2} />
               </div>
             </div>
-            {errors &&
-              <div className=' max-w-[70%] my-1 mb-1.5 px-5 h-auto text-center text-red-500 text-[15px]'>
-                <span>{errors.general}</span>
-              </div>
-            }
-            {success &&
-              <div className=' max-w-[70%] px-5 h-auto text-center my-1 mb-1.5 text-green-500 text-[15px]'>
-                <span>Registration Successfull!</span>
-              </div>
-            }
-            <button onClick={HandleSignUp} ref={btnRef} className='p-1.5 px-3 bg-blue-500 text-white rounded-md -mt-2 w-[83%] font-medium outline-none border-none'><span>{successMsg || 'Sign Up'}</span> <FontAwesomeIcon icon={!successMsg && faSignIn} /></button>
 
+            <div className='flex justify-start items-center rounded-md w-[85%] mx-auto py-0.5'>
+              <h2 className=' text-sm text-slate-800 dark:text-slate-50 px-1 mr-1'>Gender </h2>
+              <div className=' flex items-center justify-start gap-1 space-x-1'>
+                <label htmlFor='gender' className=' shadow ring-[1px] cursor-pointer flex items-center justify-center gap-1 bg-slate-50 p-0.5 px-1.5 rounded-md text-sm'>
+                  <input type="radio" className=' cursor-pointer' value={'male'} checked={signUpDetails.gender === 'male'} onChange={handleGender} id='gender' name='gender' />
+                  <h2>Male</h2>
+                </label>
+                <label htmlFor='gender2' className=' shadow ring-[1px] cursor-pointer flex items-center justify-center gap-1 bg-slate-50 p-0.5 px-1.5 rounded-md text-sm'>
+                  <input type="radio" className=' cursor-pointer' value={'female'} checked={signUpDetails.gender === 'female'} onChange={handleGender} id='gender2' name='gender' />
+                  <h2>Female</h2>
+                </label>
+              </div>
+            </div>
+
+            <button onClick={HandleSignUp} ref={btnRef} disabled={sending} className={`${sending ? ' cursor-not-allowed' : ' cursor-pointer'} p-1.5 px-3 bg-blue-500 text-white rounded-md w-[84%] font-medium outline-none border-none`}><span>{'Sign Up'}</span> <FontAwesomeIcon icon={faSignIn} /></button>
             <div className='w-full flex items-center justify-center gap-2 text-slate-900 dark:text-slate-50 text-sm mt-1'>Already have an account? <Link to='/login' className='text-slate-700 dark:text-slate-50 font-medium underline'>Login</Link></div>
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   )
 }

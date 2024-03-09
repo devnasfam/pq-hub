@@ -1,16 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import openbook from '../assets/openbook.png'
-import { faAddressCard, faLaptop, faMoon, faNetworkWired, faSignInAlt, faSun } from '@fortawesome/free-solid-svg-icons'
+import { faContactCard, faFeather, faHandsBound, faHome, faHomeAlt, faHouseChimneyWindow, faInfo, faInfoCircle, faLaptop, faMoon, faPeopleCarry, faSignInAlt, faSun } from '@fortawesome/free-solid-svg-icons'
 import { Link } from 'react-router-dom'
 import fresh from '../assets/user.png'
 import { MyAppContext } from '../AppContext/MyContext'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase/firebaseService'
-import { faUser } from '@fortawesome/free-regular-svg-icons'
 import { Tooltip } from '@mui/material'
 
-const Navbar = () => {
+const NavForAbout = () => {
   const [isOpen, setisopen] = useState(false)
   const { user, theme, setTheme } = useContext(MyAppContext);
   const [userData, setUserData] = useState(null)
@@ -54,7 +53,7 @@ const Navbar = () => {
   return (
     <div>
       <nav
-        className={`w-full h-auto p-3 ${isScroll ? ' bg-slate-50 dark:bg-[rgba(2,6,23,.75)] border-b-[0.2px]' : ''} dark:border-b-slate-900 backdrop-blur-md flex flex-row items-center justify-between fixed top-0 right-0 shadow-sm z-50`}>
+        className={`w-full h-auto p-3 ${isScroll ? ' bg-slate-50 dark:bg-[rgba(2,6,23,.75)]' : ''} border-b-[0.2px] dark:border-b-slate-800 backdrop-blur-md flex flex-row items-center justify-between fixed top-0 right-0 shadow-sm z-50`}>
         <Link to='/' className='flex items-center justify-center cursor-pointer group'>
           <img src={openbook} alt="Logo" className='w-[40px] h-[40px] cursor-pointer transform duration-200 group-hover:scale-125 group-hover:rotate-[360deg]' />
           <div className=' w-auto flex items-center justify-center flex-col'>
@@ -65,16 +64,12 @@ const Navbar = () => {
         <div>
           {/* Desktop */}
           <ul className='text-slate-700 dark:text-white list-none md:flex items-center justify-around space-x-1.5 font-medium hidden select-none'>
-            <a href='#feature' className=' w-auto flex items-center justify-center flex-col group hover:bg-slate-700 hover:text-white dark:hover:bg-slate-700 rounded-md rounded-b-none'>
-              <div ><li className='cursor-pointer px-3 py-1 transition-all ease-in-out duration-300 group'><FontAwesomeIcon icon={faNetworkWired} className='px-1.5 group-hover:text-cyan-500 pl-0 transform duration-200 group-hover:scale-100 group-hover:rotate-[360deg]' />Features</li></div>
-              <div className='w-0 rounded-lg duration-200 group-hover:w-full h-[3.5px] bg-blue-400'></div>
-            </a>
-            <Link to='/about' className=' w-auto flex items-center justify-center flex-col group hover:bg-slate-700 hover:text-white dark:hover:bg-slate-700 rounded-md rounded-b-none'>
-              <div><li className='cursor-pointer px-3 py-1 transition-all ease-in-out duration-300 group'><FontAwesomeIcon icon={faUser} className='px-1.5 pl-0 group-hover:text-pink-500 transform duration-200 group-hover:scale-100 group-hover:rotate-[360deg]' />About</li></div>
+            <Link to='/' className=' w-auto flex items-center justify-center flex-col group hover:bg-slate-700 hover:text-white dark:hover:bg-slate-700 rounded-md rounded-b-none'>
+              <div ><li className='cursor-pointer px-3 py-1 transition-all ease-in-out duration-300 group'><FontAwesomeIcon icon={faHome} className='px-1.5 pl-0 transform duration-200 group-hover:text-cyan-500 group-hover:scale-100 group-hover:rotate-[360deg]' />Home</li></div>
               <div className='w-0 rounded-lg duration-200 group-hover:w-full h-[3.5px] bg-blue-400'></div>
             </Link>
             <a href='#contact' className=' w-auto flex items-center justify-center flex-col group hover:bg-slate-700 hover:text-white dark:hover:bg-slate-700 rounded-md rounded-b-none'>
-              <div><li className='cursor-pointer px-3 py-1 transition-all ease-in-out duration-300 group'><FontAwesomeIcon icon={faAddressCard} className='px-1.5 group-hover:text-yellow-500 pl-0 transform duration-200 group-hover:scale-100 group-hover:rotate-[360deg]' />Contact</li></div>
+              <div><li className='cursor-pointer px-3 py-1 transition-all ease-in-out duration-300 group'><FontAwesomeIcon icon={faContactCard} className='px-1.5 pl-0 transform duration-200 group-hover:text-pink-500 group-hover:scale-100 group-hover:rotate-[360deg]' />Contact</li></div>
               <div className='w-0 rounded-lg duration-200 group-hover:w-full h-[3.5px] bg-blue-400'></div>
             </a>
             <div className='hidden py-[3.2px] md:flex w-auto md:mr-[200px] border dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-full px-1 items-center justify-center'>
@@ -90,7 +85,7 @@ const Navbar = () => {
             </div>
             {!user ?
               <Link to='/login'>
-                <li className='cursor-pointer ring-2 ring-blue-400 hover:bg-blue-500 hover:ring-1 dark:hover:bg-blue-500 px-3 transition-all ease-in-out duration-300 p-1 bg-blue-500 text-white rounded-xl py-[2.7px] flex items-center justify-between hover:scale-[0.98] group'>
+                <li className='cursor-pointer ring-2 ring-blue-400 hover:bg-blue-500 dark:hover:bg-blue-500 px-3 transition-all ease-in-out duration-300 p-1 bg-blue-500 text-white rounded-xl py-[2.7px] flex items-center justify-between hover:scale-[0.98] group'>
                   <div className=' group-hover:text-blue-500 w-full flex items-center justify-center'>
                     <FontAwesomeIcon icon={faSignInAlt} className='px-1 pl-0 duration-150 group-hover:scale-110 group-hover:mr-0' />
                     <p>Log in</p>
@@ -116,11 +111,10 @@ const Navbar = () => {
             style={{ transform: `scale(${scale})` }}
             id='menuMobile'
             onClick={closeMenu}
-            className="border dark:border-slate-900 bg-sky-50 text-slate-800 dark:text-white dark:bg-[rgba(2,6,23,.85)] backdrop-blur-md p-2 list-none w-auto min-h-auto fixed top-[65px] right-2 flex flex-col items-center justify-start space-y-3 font-medium rounded-md font-poppins transition-all ease-in-out duration-200 shadow-2xl mt-2 select-none md:hidden">
-            <a href="#feature"><li className='cursor-pointer active:text-slate-200 active:bg-slate-500 w-full py-1 px-10 rounded-md transition-all ease-in-out duration-300'><FontAwesomeIcon icon={faNetworkWired} className='px-1.5' />Features</li></a>
-            <Link to="/about"><li className='cursor-pointer active:text-slate-200 active:bg-slate-500 w-full py-1 px-10 rounded-md transition-all ease-in-out duration-300'><FontAwesomeIcon icon={faUser} className='px-1.5' />About</li></Link>
+            className="border dark:border-slate-900 bg-sky-50 text-slate-800 dark:text-white dark:bg-[rgba(2,6,23,.85)] p-2 list-none w-auto min-h-auto fixed top-[65px] right-2 flex flex-col items-center justify-start space-y-3 font-medium rounded-md font-poppins transition-all ease-in-out duration-200 shadow-2xl mt-2 select-none md:hidden">
+            <Link to="/"><li className='cursor-pointer active:text-slate-200 active:bg-slate-500 w-full py-1 px-10 rounded-md transition-all ease-in-out duration-300'><FontAwesomeIcon icon={faHome} className='px-1.5' />Home</li></Link>
 
-            <a href="#contact"><li className='cursor-pointer active:text-slate-200 active:bg-slate-500 w-full py-1 px-10 rounded-md transition-all ease-in-out duration-300'><FontAwesomeIcon icon={faAddressCard} className='px-1.5' />Contact</li></a>
+            <a href="#contact"><li className='cursor-pointer active:text-slate-200 active:bg-slate-500 w-full py-1 px-10 rounded-md transition-all ease-in-out duration-300'><FontAwesomeIcon icon={faContactCard} className='px-1.5' />Contact</li></a>
             <div className='flex py-[3.2px] md:hidden w-auto md:mr-[200px] bg-sky-200 dark:bg-transparent shadow border dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-full px-2 items-center justify-center'>
               <Tooltip title='Light mode' arrow enterDelay={400}>
                 <span onClick={() => setTheme('light')} className={` ${theme === "light" && 'text-slate-100 bg-slate-700'} material-symbols-outlined rounded-full text-lg cursor-pointer p-1.5 py-0`}>wb_sunny</span>
@@ -147,4 +141,4 @@ const Navbar = () => {
 }
 
 
-export default Navbar
+export default NavForAbout

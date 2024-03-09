@@ -57,17 +57,18 @@ const Section = () => {
             PQ Hub is an integrated platform designed to revolutionize the way students engage with past questions.
             With a dedicated feed showcasing popular and recent past questions, students can explore relevant content effortlessly.
             The platform offers a seamless user experience, incorporating authentication for secure signup and login processes.
-            Key features include a dynamic page for filtering and searching past questions, allowing students to tailor their study needs effectively.
+            Key features include a dynamic page for filtering and searching past questions, allowing students to tailor their study needs effectively
+            <Link to='/about' className=' text-blue-500'> read more...</Link>
           </p>
         </div>
-        <div className='w-[80%] bodyText mx-auto mt-10 md:w-[60%] p-5 lg:p-12 bg-slate-100 dark:bg-[rgba(30,41,59,.85)] backdrop-blur-md rounded-xl flex flex-col md:flex-row items-center justify-around shadow-lg text-slate-700 dark:text-slate-200'>
+        <div className='w-[80%] bodyText mx-auto mt-10 md:w-[60%] p-5 lg:p-12 bg-slate-100 dark:bg-[rgba(2,6,23,.55)] backdrop-blur-md rounded-xl flex flex-col md:flex-row items-center justify-around shadow-lg text-slate-700 dark:text-slate-200'>
           <h2 className='text-slate-800 dark:text-slate-200 lg:text-lg md:pr-2 px-3'>
-            Embark on a learning adventure at FUBK Past Questions Hub.
+            Embark on a learning adventure at Past Questions Hub.
           </h2>
           <div className='flex items-center justify-center h-full mt-3 md:mt-0'>
             {!user &&
               <button
-                className="w-[100%] relative group overflow-hidden bg-blue-500 font-medium text-md text-white p-1.5 px-5 rounded-full transition-all hover:scale-95"
+                className="w-[100%] relative group overflow-hidden bg-blue-500 ring-2 ring-blue-400 shadow font-medium text-md text-white p-1.5 px-5 rounded-full transition-all hover:scale-95"
               >
                 <Link to='/signup' className=' overflow-hidden'>
                   <div className=' z-10 group-hover:text-blue-500 w-full flex items-center justify-center'>

@@ -1,13 +1,16 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase/firebaseService';
 
 export const MyAppContext = createContext();
 
+export const useChatRoom = () => useContext(MyAppContext);
+
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [linkFrom, setlinkFrom] = useState('/profile')
   const [scrollTop, setscrollTop] = useState(false)
+  const [viewingChatRoom, setViewingChatRoom] = useState(false);
 
   const [theme, setTheme] = useState(
     localStorage.getItem('theme') ? localStorage.getItem('theme') : 'system'
@@ -81,7 +84,9 @@ export const AppProvider = ({ children }) => {
     linkFrom,
     setlinkFrom,
     scrollTop,
-    setscrollTop
+    setscrollTop,
+    setViewingChatRoom,
+    viewingChatRoom
   };
 
   return (

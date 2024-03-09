@@ -9,7 +9,7 @@ const useCheckAuth = () => {
     useEffect(()=>{
         const unsubscribe = onAuthStateChanged(auth, (user)=>{
             if(!user){
-            //  navigate('/signup')
+            //  navigate('/login')
             }
         })
         return () => unsubscribe();

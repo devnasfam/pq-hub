@@ -14,6 +14,10 @@ import Search from './pages/Search'
 import Chats from './pages/Chats'
 import savedPastQ from './pages/savedPastQ'
 import userProfile from './pages/userProfile'
+import ChatScreen from './pages/ChatScreen'
+import About from './pages/AboutUs'
+import Rewards from './pages/Rewards'
+import Admin from './pages/Admin'
 
 const App = () => {
   return (
@@ -24,6 +28,7 @@ const App = () => {
           <Route path='/' Component={Home} />
           <Route path='/signup' Component={SignUp} />
           <Route path='/login' Component={Login} />
+          <Route path='/about' Component={About} />
           <Route path='/reset-password' Component={ResetPassword} />
           <Route path='/feed' Component={Feed} />
           <Route path='/search' Component={Search} />
@@ -33,8 +38,11 @@ const App = () => {
           <Route path='/profile/my-contributions' Component={Contributions} />
           <Route path='/profile/saved' Component={savedPastQ} />
           <Route path='/ai-chatbot' Component={PQHubAI} />
+          <Route path='/rewards' Component={Rewards} />
           <Route path='/chats' Component={Chats} />
-          <Route path='/users/:userId' Component={userProfile} />
+          <Route path='/:username' Component={userProfile} />
+          <Route path='/admin' Component={Admin} />
+          <Route path='/chats/:chatId' Component={ChatScreen} />
         </Routes>
       </Router>
     </div>

@@ -3,7 +3,9 @@
 @import 'tailwindcss/utilities';
 
 * {
-    font-family: "Poppins", sans-serif;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     scroll-behavior: smooth;
 }
 
@@ -20,11 +22,11 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(183, 203, 203, 1);
+    background: rgba(0, 0, 0, .4);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(30, 139, 248, .4);
+    background: rgba(30, 139, 248, .5);
     border-radius: 10px;
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
@@ -38,6 +40,12 @@
 
 .chatscroll::-webkit-scrollbar {
     display: none;
+}
+
+@media screen and (max-width:700px) {
+    ::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 .bookNormal,
@@ -62,6 +70,28 @@
     -ms-transform: translateX(-100%);
     -o-transform: translateX(-100%);
 }
+.btnNormal2 {
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+    transform: translateX(-100%), rotate(-40deg);
+    -webkit-transform: translateX(-100%), rotate(-40deg);
+    -moz-transform: translateX(-100%), rotate(-40deg);
+    -ms-transform: translateX(-100%), rotate(-40deg);
+    -o-transform: translateX(-100%), rotate(-40deg);
+    -webkit-transition: all 0.5s ease-in-out;
+    -moz-transition: all 0.5s ease-in-out;
+    -ms-transition: all 0.5s ease-in-out;
+    -o-transition: all 0.5s ease-in-out;
+}
+.btnCome2{
+    transform: translateX(0), rotate(0deg);
+    opacity: 1;
+    -webkit-transform: translateX(0), rotate(0deg);
+    -moz-transform: translateX(0), rotate(0deg);
+    -ms-transform: translateX(0), rotate(0deg);
+    -o-transform: translateX(0), rotate(0deg);
+}
+
 
 .btnCome,
 .bookCome {
@@ -86,6 +116,7 @@
     -ms-transition: .45s ease-out;
     -o-transition: .45s ease-out;
 }
+
 .cardNormalr {
     transform: translateX(80%);
     opacity: 0;
@@ -100,7 +131,8 @@
     -o-transition: .45s ease-out;
 }
 
-.cardComer, .cardComel {
+.cardComer,
+.cardComel {
     transform: translateY(0);
     -webkit-transform: translateY(0);
     -moz-transform: translateY(0);
@@ -157,14 +189,6 @@
     }
 }
 
-.skeletonloader {
-    font-size: 33px;
-    color: rgb(132, 124, 153);
-    animation: rotate 1s linear infinite;
-    border-top-color: transparent;
-    -webkit-animation: rotate 1s linear infinite;
-}
-
 .confirmbox {
     position: fixed;
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, .4);
@@ -182,7 +206,8 @@
     background: linear-gradient(to bottom left, dodgerblue, rgb(12, 12, 148));
 }
 
-.headText, .headText2 {
+.headText,
+.headText2 {
     transform: translateX(-70%);
     -webkit-transform: translateX(-70%);
     -moz-transform: translateX(-70%);
@@ -196,7 +221,7 @@
     -o-transition: .6s ease-out;
 }
 
-.headText2{
+.headText2 {
     transform: translateX(70%);
     -webkit-transform: translateX(70%);
     -moz-transform: translateX(70%);
@@ -204,7 +229,8 @@
     -o-transform: translateX(70%);
 }
 
-.headCome, .headCome2 {
+.headCome,
+.headCome2 {
     transform: translateX(0%);
     -webkit-transform: translateX(0%);
     -moz-transform: translateX(0%);
@@ -234,4 +260,26 @@
     -ms-transform: translateY(0%);
     -o-transform: translateY(0%);
     opacity: 1;
+}
+
+.skele {
+    background: linear-gradient(to top right, rgb(15, 23, 42), rgb(30, 41, 59));
+    animation: shine 1s linear infinite alternate;
+    -webkit-animation: shine 1s linear infinite alternate;
+}
+
+@keyframes shine {
+    from {
+        opacity: .5;
+        background: linear-gradient(to top right, rgb(15, 23, 42), rgb(30, 41, 59));
+    }
+
+    to {
+        opacity: 1;
+        background: linear-gradient(to top left, rgb(15, 23, 42), rgb(30, 41, 59));
+    }
+}
+
+.scrollMsgbody ::-webkit-scrollbar {
+    display: none;
 }

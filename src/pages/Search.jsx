@@ -10,6 +10,8 @@ import Select from 'react-select'
 import { examTypes, Year, Level } from '../examtypes'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '../firebase/firebaseService'
+import toast, { Toaster } from 'react-hot-toast'
+import { CircularProgress, Tooltip } from '@mui/material'
 
 const Search = () => {
 
@@ -36,6 +38,10 @@ const Search = () => {
     document.title = 'Search'
     inpRef.current.focus();
   }, [document.title])
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+}, [])
 
 
   const hide = isOpen ? 'flex' : 'hidden';
@@ -64,6 +70,7 @@ const Search = () => {
       let queryRef = query(postsCollection, where("isPrivate", "==", false));
       if (!examSelect && !yearSelect && !levelSelect) {
         seterrmsg(true)
+        toast.error('Please select at least one filter (exam type, year, or level) before querying.', { duration: 3500, position: 'top-center' });
       } else {
         setNoposts(false)
         setLoading(true);
@@ -72,6 +79,7 @@ const Search = () => {
         seterrmsg(false)
         setSearchvalue('')
         window.scrollTo(0, 0);
+        setexamMsg('')
         if (examSelect) {
           setexamMsg(examSelect.value)
           queryRef = query(queryRef, where("examType", "==", examSelect.value));
@@ -121,11 +129,14 @@ const Search = () => {
       setStartMsg(false);
       setLoading(true);
       setNoposts(false);
+      setexamMsg(searchValue)
+      setyearMsg('')
+      setLevelMsg('')
       window.scrollTo(0, 0);
       try {
         const postsCollection = collection(db, 'Posts');
         let queryRef = query(postsCollection, where("isPrivate", "==", false));
-        queryRef = query(queryRef, where("examType", "==", searchValue.trim().toUpperCase()));
+        queryRef = query(queryRef, where("examType", "==", searchValue.trim().toUpperCase().replace(' ','')));
 
         const snapshot = await getDocs(queryRef);
 
@@ -166,14 +177,18 @@ const Search = () => {
     <div className=' w-full h-auto pb-[35px] md:pb-0'>
       <div className='w-full flex items-center justify-center bg-blue-500 dark:bg-[rgba(30,41,59,.85)] fixed top-0 right-0 z-30 backdrop-blur-md p-5'>
         <div className=' w-[95%] sm:w-[85%] md:w-[85%] lg:w-[65%] flex items-center justify-center'>
-          <Link to='/feed' className=' p-1 dark:text-slate-100 text-slate-100'>
-            <FontAwesomeIcon className=' mr-3 text-md' icon={faArrowLeft} />
+         <Tooltip title='Back' arrow enterDelay={500}>
+          <Link to='/feed' className=' dark:text-slate-100 text-slate-100'>
+              <FontAwesomeIcon className=' mr-3 text-md' icon={faArrowLeft} />
           </Link>
-          <div className='flex justify-center items-center rounded-full bg-slate-200 dark:bg-slate-950 px-2 py-[3px] w-[85%] md:w-[75%]'>
-            <input type="text" ref={inpRef} value={searchValue} onChange={(e) => setSearchvalue(e.target.value)} placeholder='Search...' className=' dark:placeholder-slate-500 placeholder-slate-600 text-slate-700 font-medium p-1 px-3 rounded-md w-full outline-none bg-transparent border-none dark:text-slate-50' />
-            <FontAwesomeIcon onClick={HandleSearch} icon={faSearch} className={`${searchValue.trim() !== '' && 'text-white bg-blue-500'} duration-300 text-slate-900 dark:text-slate-50 text-lg p-[9px] rounded-full cursor-pointer`} />
+         </Tooltip>
+          <div className='flex justify-center items-center rounded-full bg-slate-200 dark:bg-slate-950 px-2 py-[2px] w-[85%] md:w-[75%]'>
+            <input type="text" ref={inpRef} value={searchValue} onChange={(e) => setSearchvalue(e.target.value)} placeholder='Search...' className=' dark:placeholder-slate-500 placeholder-slate-600 text-slate-700 font-medium px-3 rounded-md w-full outline-none bg-transparent border-none dark:text-slate-50' />
+            <Tooltip title='Search' arrow>
+              <FontAwesomeIcon onClick={HandleSearch} icon={faSearch} className={`${searchValue.trim() !== '' && 'text-white bg-blue-500'} duration-300 text-slate-900 dark:text-slate-50 text-lg p-[7px] rounded-full cursor-pointer`} />
+            </Tooltip>
           </div>
-          <div onClick={HanldeOpen} className='flex items-center justify-center p-2 px-3 text-md text-white bg-slate-700 dark:bg-slate-700 rounded-full cursor-pointer ml-3 select-none'>
+          <div onClick={HanldeOpen} className='flex items-center justify-center p-1.5 px-3 text-md text-white bg-slate-700 dark:bg-slate-700 rounded-full cursor-pointer ml-3 select-none'>
             <FontAwesomeIcon icon={faFilter} className=' p-1 py-0' />
             <div className=' text-sm'>Filter</div>
           </div>
@@ -183,17 +198,17 @@ const Search = () => {
 
       <div className=' w-full p-3 pb-0 pt-[95px] flex items-center justify-center gap-x-3'>
         <div className=' flex items-center justify-center gap-x-2 rounded-md text-slate-100'>
-          {examMsg && <div className=' w-auto p-1.5 text-sm bg-blue-500 rounded-full px-3 dark:bg-slate-700'>{examMsg && 'Exam: ' + examMsg} </div>}
-          {LevelMsg && <div className=' w-auto p-1.5 text-sm bg-blue-500 rounded-full px-3 dark:bg-slate-700'>{LevelMsg && 'Level: ' + LevelMsg} </div>}
-          {yearMsg && <div className=' w-auto p-1.5 text-sm bg-blue-500 rounded-full px-3 dark:bg-slate-700'>{yearMsg && 'Year: ' + yearMsg} </div>}
+          {examMsg && <div className=' w-auto p-1.5 text-sm bg-blue-500 rounded-full px-3 dark:bg-slate-700'>{examMsg && examMsg} </div>}
+          {yearMsg && <div className=' w-auto p-1.5 text-sm bg-blue-500 rounded-full px-3 dark:bg-slate-700'>{yearMsg && yearMsg} </div>}
+          {LevelMsg && <div className=' w-auto p-1.5 text-sm bg-blue-500 rounded-full px-3 dark:bg-slate-700'>{LevelMsg && LevelMsg} </div>}
         </div>
       </div>
 
       {loading && <div className=' w-full flex items-center justify-center gap-2 text-xl text-white mt-4'>
-        <FontAwesomeIcon className='skeletonloader' icon={faSpinner} />
+        <CircularProgress size={30} thickness={4}/>
       </div>}
 
-      {startMsg && <div className='w-full h-auto text-slate-700 dark:text-slate-400 p-2 px-5 tracking-wider md:pl-[90px] flex items-center justify-center mt-5 flex-col gap-2'>
+      {startMsg && <div className='w-full h-auto text-slate-700 dark:text-slate-400 p-2 px-5 tracking-wider md:pl-[90px] flex items-center justify-center mt-2 flex-col gap-2'>
         <div className=' text-lg font-semibold'>
           <FontAwesomeIcon icon={faBookOpenReader} className='text-[25px] px-2' />
           Find Past Questions
@@ -220,12 +235,14 @@ const Search = () => {
         </div>
       </div>}
 
-      <div className={` overflow-none w-full h-screen fixed top-0 left-0 bg-[rgba(0,0,0,.4)] z-20 items-center justify-center ${hide}`}>
+      <div className={` z-50 overflow-none w-full h-screen fixed top-0 left-0 bg-[rgba(0,0,0,.4)] items-center justify-center ${hide}`}>
 
         <div className='w-[85%] px-3 sm:w-[70%] md:w-[60%] lg:w-[35%] h-auto border border-slate-200 dark:border-slate-700 bg-white dark:bg-[rgba(30,41,59,.75)] backdrop-blur-lg p-3 mx-auto shadow-xl rounded-xl'>
           <div className='w-full h-auto p-2 flex items-center justify-between text-slate-700 dark:text-slate-200 border-b-[.15px] border-b-slate-200 dark:border-b-slate-700'>
             <h2>Filter Past Questions</h2>
-            <FontAwesomeIcon icon={faTimes} onClick={HandleClose} className='p-2 cursor-pointer text-lg' />
+            <Tooltip title='Close' arrow placement='bottom' enterDelay={500}>
+              <FontAwesomeIcon icon={faTimes} onClick={HandleClose} className='p-2 cursor-pointer text-lg' />
+            </Tooltip>
           </div>
           <div className=' p-1.5 font-medium text-slate-600 dark:text-slate-200 mt-1.5'>Select Level</div>
           <Select
@@ -246,17 +263,15 @@ const Search = () => {
             value={yearSelect}
             onChange={(e) => HandleYearSelect(e)}
           />
-          {errmsg &&
-            <div className=' w-full p-2 pb-0 text-center text-sm text-red-500'>Please select at least one filter (exam type, year, or level) before querying.</div>
-          }
           <div className='w-full h-auto p-2 flex items-center justify-center'>
-            <button onClick={HanldeFilter} className=' truncate w-[65%] p-1.5 my-3 px-4 bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-400 transform transition-all hover:scale-[0.98] text-white'>
+            <button onClick={HanldeFilter} className=' truncate w-[65%] p-1.5 my-3 px-4 bg-blue-500 rounded-xl hover:bg-blue-600 active:bg-blue-400 transform transition-all hover:scale-[0.98] text-white'>
               <FontAwesomeIcon className='px-2' icon={faFilter} />
               Find Now
             </button>
           </div>
         </div>
       </div>
+      <Toaster position='bottom-center' />
     </div>
   )
 }

@@ -1,91 +1,202 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useLayoutEffect, useState } from 'react'
 import TopNav from '../components/TopNav'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faComment, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faComment, faSpinner, faThumbTack } from '@fortawesome/free-solid-svg-icons'
 import Navigations from '../components/Navigations'
 import { Link } from 'react-router-dom'
+import { doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { db } from '../firebase/firebaseService'
+import userPhoto from '../assets/user.png'
+import chatbot from '../assets/chatbot.png'
+import { MyAppContext, useChatRoom } from '../AppContext/MyContext'
+import { CircularProgress } from '@mui/material'
 
 const Chats = () => {
-  const [isShowModal, setisShowModal] = useState(false)
-  const [searchValue, setSearchvalue] = useState('')
+  const [chats, setChats] = useState([]);
+  const [noChats, setnoChats] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const { user } = useContext(MyAppContext)
+  const { setViewingChatRoom, viewingChatRoom } = useChatRoom();
 
-  const inputRef = useRef(null)
-
-  const handleShowModal = () => {
-    setisShowModal(true)
-    setTimeout(() => {
-      inputRef.current.focus()
-    }, 100);
-  }
-  const closeModal = () => {
-    setisShowModal(false)
-    setSearchvalue('')
-  }
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0); // Reset scroll position to top when the pathname changes
+  }, []);
   useEffect(() => {
+    if (!user) return;
+
+    let unsubscribeFuncs = [];
+
+    const fetchChats = async () => {
+      setViewingChatRoom(false);
+      try {
+        const userDocRef = doc(db, 'Users', user.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
+        const userData = userDocSnapshot.data();
+
+        if (!userData || !userData.chatIds) {
+          console.log('User data or chatIds are not available.');
+          setnoChats(true);
+          setLoading(false);
+          return;
+        }
+
+        const chatIds = userData.chatIds;
+        let docsArr = [];
+
+        for (const id of chatIds) {
+          const chatDocRef = doc(db, 'Chats', id);
+          const unsubscribe = onSnapshot(chatDocRef, async (chatDocSnapshot) => {
+            const chatData = chatDocSnapshot.data();
+
+            if (!chatData) {
+              console.log(`Chat data not found for ID: ${id}`);
+              return;
+            }
+
+            const senderDocRef = doc(db, 'Users', chatData.senderId);
+            const receiverDocRef = doc(db, 'Users', chatData.receiverId);
+
+            const senderDocSnapshot = await getDoc(senderDocRef);
+            const receiverDocSnapshot = await getDoc(receiverDocRef);
+
+            const senderData = senderDocSnapshot.data();
+            const receiverData = receiverDocSnapshot.data();
+
+            const chatWithUserData = {
+              ...chatData,
+              senderData,
+              receiverData
+            };
+
+            // Check if the chat already exists in the array
+            const existingChatIndex = docsArr.findIndex((chat) => chat.chatRoomId === id);
+
+            if (existingChatIndex !== -1) {
+              // If the chat exists, replace it with the updated data
+              docsArr[existingChatIndex] = chatWithUserData;
+            } else {
+              // Otherwise, add it to the array
+              docsArr.push(chatWithUserData);
+            }
+
+            // Sort chats by the timestamp of the last message in descending order
+            docsArr.sort((a, b) => b.timestamp - a.timestamp);
+            setViewingChatRoom(false);
+            setChats([...docsArr]); // Update the state with the sorted array
+            setnoChats(false);
+            setLoading(false);
+          });
+
+          unsubscribeFuncs.push(unsubscribe); // Store the unsubscribe function
+        }
+        setViewingChatRoom(false)
+      } catch (error) {
+        console.error('Error fetching chats:', error);
+        setLoading(false);
+      }
+    };
+
     document.title = 'Chats'
-  }, [document.title])
+    fetchChats();
+
+    return () => {
+      // Cleanup function to unsubscribe from all listeners
+      unsubscribeFuncs.forEach((unsubscribe) => unsubscribe());
+    };
+  }, [user, document.title]);
+
+  useEffect(() => {
+    setViewingChatRoom(false);
+  }, [viewingChatRoom])
+
+  const formatLastMessage = (lastMessage, currentUserUid) => {
+    if (lastMessage.senderId === currentUserUid) {
+      return 'You: ' + lastMessage.message;
+    } else {
+      return lastMessage.message;
+    }
+  };
+
+  const handleViewChat = () => {
+    setViewingChatRoom(true);
+  }
+
   return (
-    <div className=' w-full h-auto pt-[74px] pb-[75px]'>
-      <TopNav name={
-        <>
+    <div className=' scrollMsgbody w-full h-auto pt-[74px] pb-[75px] overflow-hidden'>
+      <TopNav>
           <div className=' w-full flex items-center justify-start'>
             <h2 className='text-lgtext-white ml-3 flex items-center justify-center font-medium truncate'>
               <FontAwesomeIcon className=' p-2 text-lg' icon={faComment} />
-              PQ Hub Chat Forum
+              Chats
             </h2>
           </div>
-          <div className=' md:mr-48'>
-            <div onClick={handleShowModal} className={` ${isShowModal ? '' : ' max-[565px]:w-10 max-[565px]:h-10 max-[565px]:mr-3'} cursor-pointer w-full flex items-center bg-sky-50 text-slate-900 dark:text-slate-100 dark:bg-slate-900 p-1 justify-center gap-x-2 rounded-full px-5 -ml-2`}>
-              <input ref={inputRef} value={searchValue} onChange={(e) => setSearchvalue(e.target.value)} type="text" placeholder='Search Friends...' className={`${isShowModal ? 'max-[565px]:block cursor-default' : ' max-[565px]:hidden cursor-pointer'} text-[14.3px] outline-none w-[130px] lg:w-[190px] placeholder-slate-800 dark:placeholder-slate-200 bg-transparent px-3`} />
-              <FontAwesomeIcon className={`${isShowModal && searchValue.trim() !== '' && 'text-white bg-blue-500'} duration-300 text-slate-900 dark:text-slate-50 p-2 rounded-full cursor-pointer`} icon={faSearch} />
-            </div>
-          </div>
-          <div className={`${isShowModal ? 'scale-100' : ' scale-0'} duration-200 w-[60%] sm:w-[50%] md:w-[40%] xl:w-[25%] h-48 max-h-80 absolute bg-white rounded-xl right-3 md:right-48 top-20 dark:bg-[rgba(30,41,59,.85)] backdrop-blur-md shadow-[0_4px_3px_rgba(0,0,0,.05)] border border-slate-200 dark:border-slate-700 bg-[rgba(255,255,255,.75)]`}>
-            <div className=' w-full flex items-center justify-around p-2'>
-              <div className=' w-full p-2 border-b-[0.01px] text-slate-800 dark:text-slate-100 text-base border-slate-200 dark:border-b-slate-500'>
-                Search results:
-              </div>
-              <FontAwesomeIcon onClick={closeModal} className=' p-2 cursor-pointer' icon={faTimes} />
-            </div>
-            {/* Result Body */}
-            <div className=' w-full flex items-center justify-center flex-col p-1'>
-              <div className=' w-full flex items-center justify-start p-1 gap-2'>
-                <div className=' w-9 h-9 bg-slate-300 rounded-full'></div>
-                <div className=' flex items-center justify-center gap-2 text-slate-800 dark:text-slate-200'>
-                  <div>devnasfam</div>
-                  <div className=' text-xs '>(300L)</div>
+      </TopNav>
+      <div className='pb-[78px] w-full h-auto md:pb-0 md:pl-[170px] text-slate-50'>
+        {!loading && chats &&
+          <Link to={'/ai-chatbot'} className='cursor-pointer duration-200 w-full border-b border-slate-200 dark:border-b-slate-900 p-3 flex items-center gap-2 justify-between'>
+            <div className='flex items-center gap-2'>
+              {/* Profile icon */}
+              <img src={ chatbot || userPhoto} className='w-12 h-12 shrink-0' />
+              {/* Chat info */}
+              <div className='flex flex-col w-full truncate p-1.5'>
+                <div className=' text-[17px] py-0.5 w-full text-slate-700 dark:text-slate-100 truncate'>
+                  AI Assistant
                 </div>
-              </div>
-              <div className=' w-full flex items-center justify-start p-1 gap-2'>
-                <div className=' w-9 h-9 bg-slate-300 rounded-full'></div>
-                <div className=' flex items-center justify-center gap-2 text-slate-800 dark:text-slate-200'>
-                  <div>shinobite</div>
-                  <div className=' text-xs '>(300L)</div>
+                <div className='text-sm text-slate-500 flex items-center justify-start gap-x-0.5 dark:text-slate-300 whitespace-pre-wrap'>
+                  hi
                 </div>
               </div>
             </div>
-          </div>
-        </>
-      } />
-      <div className='pb-[78px] w-full h-auto md:pb-0 md:pl-[240px] text-slate-50'>
-        <Link to='' className=' cursor-pointer w-full border-b-[0.01px] border-slate-200 dark:border-b-slate-900 p-3 flex items-center gap-2 justify-between'>
-          <div className=' flex items-center justify-center gap-2'>
-            {/* profile icon */}
-            <div className=' w-12 h-12 shrink-0 rounded-full bg-slate-600 p-2' />
-            {/* Chat Name */}
-            <div className=' p-2 flex items-start justify-center flex-col'>
-              <div className=' truncate font-semibold tracking-wide text-slate-700 dark:text-slate-100'>Past Q Discussion Group</div>
-              {/* Chat Message */}
-              <div className=' text-sm text-slate-500 dark:text-slate-300 overflow-hidden whitespace-nowrap text-ellipsis'>Hello everyone</div>
+            <div className='flex items-center flex-col justify-center gap-1'>
+              {/* Time */}
+              <div className='text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap'>
+                <FontAwesomeIcon icon={faThumbTack}/>
+              </div>
             </div>
-          </div>
-          <div className=' w-full px-2 flex items-end justify-center flex-col'>
-            <div className=' flex items-center justify-center flex-col gap-1'>
-              <div className=' p-1.5 text-xs bg-blue-500 text-slate-100 rounded-full w-auto h-5 flex items-center justify-center'>23</div>
-              <div className=' text-xs whitespace-nowrap tracking-tighter text-slate-400 p-1'>12:00 am</div>
+
+          </Link>
+        }
+        {chats?.map((chat) => (
+          <Link key={chat.chatRoomId} onClick={handleViewChat} to={chat.chatRoomId} className='cursor-pointer duration-200 w-full border-b border-slate-200 dark:border-b-slate-900 p-3 flex items-center gap-2 justify-between'>
+            <div className='flex items-center gap-2'>
+              {/* Profile icon */}
+              <img src={user?.uid === chat.senderData?.id ? chat?.receiverData?.profilePicture || userPhoto : chat.senderData?.profilePicture || userPhoto} className='w-12 h-12 shrink-0 rounded-full border-[.4px] border-slate-300 dark:border-slate-800' />
+              {/* Chat info */}
+              <div className='flex flex-col w-full truncate p-1.5'>
+                <div className=' text-[17px] py-0.5 w-full text-slate-700 dark:text-slate-100 truncate'>
+                  {user?.uid === chat.senderData?.id ? chat?.receiverData?.username : chat.senderData?.username}
+                </div>
+                <div className='text-sm text-slate-500 flex items-center justify-start gap-x-0.5 dark:text-slate-300 whitespace-pre-wrap'>
+                  {chat.messages.length > 0 ? formatLastMessage(chat.messages[chat.messages.length - 1], user.uid) : 'No messages'}
+                  {chat.messages[chat.messages.length - 1].senderId === user.uid && (chat.messages[chat.messages.length - 1].seen ?
+                    <span className="material-symbols-outlined flex items-center justify-center text-sm text-blue-500">done_all</span>
+                    :
+                    <span className="material-symbols-outlined flex items-center justify-center text-sm text-slate-200">done</span>)}
+                </div>
+              </div>
             </div>
-          </div>
-        </Link>
+            <div className='flex items-center flex-col justify-center gap-1'>
+              {/* Unread count */}
+              {chat.messages.filter(message => !message.seen && message.senderId !== user.uid && message.receiverId === user.uid).length > 0 &&
+                <div className={`text-xs bg-blue-500 text-slate-100 rounded-full p-1.5 py-1 m-1 ${chat.messages.filter(message => !message.seen && message.senderId !== user.uid && message.receiverId === user.uid).length < 10 ? ' w-5 flex items-center justify-center h-5 p-0' : ' w-auto h-auto flex items-center justify-center'}`}>
+                  {chat.messages.filter(message => !message.seen && message.senderId !== user.uid && message.receiverId === user.uid).length}
+                </div>
+              }
+
+              {/* Time */}
+              <div className='text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap'>
+                {chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].time : ''}
+              </div>
+            </div>
+
+          </Link>
+        ))}
+        {loading && <div className=' w-full flex items-center justify-center gap-2 text-xl text-white mt-4'>
+        <CircularProgress size={30} thickness={4}/>
+        </div>}
+        {chats?.length < 1 && noChats &&
+          <div className=' w-full flex items-center justify-center p-4'>No chats history...</div>
+        }
       </div>
       <Navigations />
     </div>
@@ -93,4 +204,3 @@ const Chats = () => {
 }
 
 export default Chats
-//08027082276

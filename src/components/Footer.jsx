@@ -19,6 +19,8 @@ import {
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase/firebaseService";
 import { MyAppContext } from "../AppContext/MyContext";
+import toast, { Toaster } from "react-hot-toast";
+import { Tooltip } from "@mui/material";
 
 const Footer = () => {
 
@@ -39,11 +41,9 @@ const Footer = () => {
     const feedbackRef = collection(db, "Feedbacks");
     try {
       if (feedBack.trim() === '') {
-        seterrorMsg('Please feedback before submitting!')
-        setsuccessMsg('')
-        setBtnContent('')
+        toast.error('Please feedback before submitting!', { duration: 2000 })
       } else {
-        setBtnContent('Sending...')
+        const loadToast = toast.loading('Sending feedback...', { duration: Infinity })
         await addDoc(feedbackRef, {
           feedBack,
           date: new Date(),
@@ -51,9 +51,7 @@ const Footer = () => {
           city: ipInfo.city || 'Unknown city',
           timestamp: Date.now(),
         })
-        seterrorMsg('')
-        setsuccessMsg('Thanks for your feedback!')
-        setBtnContent('')
+        toast.success('Thanks for your feedback!', { duration: 2000, id:loadToast })
         setfeedBack('')
         setTimeout(() => {
           setsuccessMsg('')
@@ -61,8 +59,7 @@ const Footer = () => {
       }
     } catch (error) {
       console.log(error)
-      seterrorMsg(error)
-      setBtnContent('')
+      toast.error(error.message, { duration: 2000, id:loadToast })
     }
   }
 
@@ -123,7 +120,7 @@ const Footer = () => {
   return (
     <footer
       id="contact"
-      className="footShowScroll scroll-m-14 z-30 w-full bg-slate-950 h-auto flex items-center justify-center py-4">
+      className="footShowScroll border-t-[0.1px] border-t-slate-900 scroll-m-14 z-30 w-full bg-slate-950 h-auto flex items-center justify-center py-4">
       <div className="w-[95%] h-auto p-5 flex items-center justify-around gap-3 flex-col xl:flex-row">
         <div className="w-full flex items-center justify-center gap-3 flex-col md:flex-row">
           <div className="w-full h-auto p-2">
@@ -214,15 +211,12 @@ const Footer = () => {
                   onChange={HandleChange}
                   className="w-[60%] md:w-[65%] xl:w-[85%] rounded-full p-[5px] px-4 pr-14 outline-none"
                 />
-                <button onClick={sendFeedBack} className=" shrink-0 -ml-12 z-10 relative group hover:text-blue-500 bg-blue-500 w-[48px] h-[48px] duration-150 hover:scale-[1] active:bg-blue-400  flex items-center justify-center rounded-full text-slate-50">
+              <Tooltip title='Send' enterDelay={400} arrow>
+                <button onClick={sendFeedBack} className=" outline-none shrink-0 -ml-12 z-10 relative group hover:text-blue-500 bg-blue-500 w-[48px] h-[48px] duration-150 hover:scale-[1] active:bg-blue-400  flex items-center justify-center rounded-full text-slate-50">
                   <FontAwesomeIcon className="px-2 z-10 group-hover:text-blue-500" icon={faPaperPlane} />
                   <div className=' -z-10 transform scale-0 top-full left-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:top-1/2 group-hover:scale-100 rounded-full duration-300 w-full bg-slate-100 h-full absolute'></div>
                 </button>
-              </div>
-              <div className=" self-start">
-                {btnContent && <div className=" justify-self-start text-slate-200 text-sm p-3 ">{btnContent}</div>}
-                {errorMsg && <div className=" justify-self-start text-red-400 text-sm p-3">{errorMsg}</div>}
-                {successMsg && <div className=" justify-self-start text-green-400 text-sm p-3 ">{successMsg}</div>}
+              </Tooltip>
               </div>
             </div>
             <div className=" hidden md:block m-4 mb-1 text-slate-400 text-sm">
@@ -250,6 +244,7 @@ const Footer = () => {
           &copy; All rights reserved 2023
         </div>
       </div>
+      <Toaster position="bottom-center" />
     </footer>
   )
 };

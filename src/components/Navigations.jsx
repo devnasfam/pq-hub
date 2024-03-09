@@ -1,23 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBrain, faComment, faHome, faLayerGroup, faMessage, faPlusCircle, faSearch, faSignOut, faUserGraduate } from '@fortawesome/free-solid-svg-icons'
+import { faCoins, faComments, faHome, faSignOut, faUser, faUserShield } from '@fortawesome/free-solid-svg-icons'
 import { NavLink, useNavigate } from 'react-router-dom'
 import fresh from '../assets/user.png'
 import { signOut } from 'firebase/auth'
 import { auth, db } from '../firebase/firebaseService'
 import { MyAppContext } from '../AppContext/MyContext'
-import { collection, doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
+import { Tooltip } from '@mui/material'
 
 const Navigations = () => {
-  const { user, setUser } = useContext(MyAppContext)
-  const [userData, setUserData] = useState(null)
+  const { user } = useContext(MyAppContext)
+  const [userData, setUserData] = useState('')
   const navigate = useNavigate()
   const HandleSignOut = async () => {
     try {
       await signOut(auth);
       navigate('/')
     } catch (error) {
-      alert(error)
+      // console.log(error)
     }
   }
   useEffect(() => {
@@ -27,9 +28,11 @@ const Navigations = () => {
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           setUserData(userSnap.data())
+        }else{
+          setUserData('')
         }
       } catch (error) {
-        console.log(error)
+        // console.log(error)
       }
     }
     fetchUserData()
@@ -54,58 +57,60 @@ const Navigations = () => {
             </div>
             <div className='text-sm truncate'>Feed</div>
           </NavLink>
-          <NavLink to='/ai-chatbot' className='bg-[rgba(0,0,0,.06)] dark:bg-gray-800 flex items-center justify-start flex-row select-none p-2 transition-all duration-200 gap-x-2 w-full px-5 rounded-xl'>
-            <div>
-              <FontAwesomeIcon icon={faBrain} />
-            </div>
-            <div className='text-sm truncate'>Ai Chatbot</div>
-          </NavLink>
           <NavLink to='/chats' className='bg-[rgba(0,0,0,.06)] dark:bg-gray-800 flex items-center justify-start flex-row select-none p-2 transition-all duration-200 gap-x-2 w-full px-5 rounded-xl'>
             <div>
-              <FontAwesomeIcon icon={faComment} />
+              <FontAwesomeIcon icon={faComments} />
             </div>
             <div className='text-sm truncate'>Chats</div>
           </NavLink>
+          <NavLink to='/rewards' className='bg-[rgba(0,0,0,.06)] dark:bg-gray-800 flex items-center justify-start flex-row select-none p-2 transition-all duration-200 gap-x-2 w-full px-5 rounded-xl'>
+            <div>
+              <FontAwesomeIcon icon={faCoins} />
+            </div>
+            <div className='text-sm truncate'>Rewards</div>
+          </NavLink>
           <NavLink to='/profile' className='bg-[rgba(0,0,0,.06)] dark:bg-gray-800 flex items-center justify-start flex-row select-none p-2 transition-all duration-200 gap-x-2 w-full px-5 rounded-xl'>
             <div>
-              <FontAwesomeIcon icon={faUserGraduate} />
+              <FontAwesomeIcon icon={faUser} />
             </div>
             <div className='text-sm truncate'>Profile</div>
           </NavLink>
         </div>
-        <div onClick={HandleSignOut} className='text-white dark:text-red-500 w-full bg-red-500 dark:bg-white text-sm flex items-center justify-center flex-row select-none p-2 dark:hover:bg-red-500 dark:hover:text-white hover:text-white cursor-pointer transition-all duration-200 gap-x-2 mt-1 rounded-lg px-5'>
+        <Tooltip title='Log out now!' arrow enterDelay={600}>
+        <div onClick={HandleSignOut} className='text-white shadow w-full bg-red-500 text-sm flex items-center justify-center flex-row select-none p-2 cursor-pointer transition-all duration-200 gap-x-2 mt-1 rounded-xl px-5'>
           <div>
             <FontAwesomeIcon icon={faSignOut} />
           </div>
           <div className='text-sm truncate'>Log Out</div>
         </div>
+        </Tooltip>
       </div>
 
       {/* Mobile View */}
-      <div className='fixed bottom-0 w-full h-auto bg-slate-100 pb-1 dark:bg-[rgba(30,41,59,.85)] backdrop-blur-md md:hidden flex items-center justify-around text-slate-900 dark:text-slate-100 gap-2 border-t-[.5px] dark:border-t-slate-700 select-none z-50'>
-        <NavLink to='/feed' className='flex items-center justify-center flex-col select-none p-2'>
+      <div className='fixed bottom-0 w-full h-auto bg-slate-100 py-0.5 dark:bg-[rgba(30,41,59,.85)] backdrop-blur-md md:hidden flex items-center justify-around text-slate-900 dark:text-slate-100 gap-2 border-t-[.5px] dark:border-t-slate-700 select-none z-50'>
+        <NavLink to='/feed' className='flex items-center justify-center flex-col select-none p-1'>
           <div>
             <FontAwesomeIcon icon={faHome} />
           </div>
-          <div className='text-sm truncate'>Feed</div>
+          <div className='text-[13px] truncate'>Feed</div>
         </NavLink>
-        <NavLink to='/ai-chatbot' className='flex items-center justify-center flex-col select-none p-2'>
+        <NavLink to='/chats' className='flex items-center justify-center flex-col select-none p-1'>
           <div>
-            <FontAwesomeIcon icon={faBrain} />
+            <FontAwesomeIcon icon={faComments} />
           </div>
-          <div className='text-sm truncate'>AI Chatbot</div>
+          <div className='text-[13px] truncate'>Chats</div>
         </NavLink>
-        <NavLink to='/chats' className='flex items-center justify-center flex-col select-none p-2'>
+        <NavLink to='/rewards' className='flex items-center justify-center flex-col select-none p-1'>
           <div>
-            <FontAwesomeIcon icon={faComment} />
+            <FontAwesomeIcon icon={faCoins} />
           </div>
-          <div className='text-sm truncate'>Chats</div>
+          <div className='text-[13px] truncate'>Rewards</div>
         </NavLink>
-        <NavLink to='/profile' className='flex items-center justify-center flex-col select-none p-2'>
+        <NavLink to='/profile' className='flex items-center justify-center flex-col select-none p-1'>
           <div>
-            <FontAwesomeIcon icon={faUserGraduate} />
+            <FontAwesomeIcon icon={faUser} />
           </div>
-          <div className='text-sm truncate'>Profile</div>
+          <div className='text-[13px] truncate'>Profile</div>
         </NavLink>
       </div>
     </>
