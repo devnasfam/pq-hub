@@ -1,0 +1,23 @@
+{
+  "name": "fullstack-app",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "build": "vite build",
+    "dev": "vite",
+    "server": "node api/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.2.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "vite": "^2.4.4"
+  }
+}
