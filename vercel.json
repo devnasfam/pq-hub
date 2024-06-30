@@ -1,31 +1,18 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "routes": [
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
     {
-      "src": "/api/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
-      },
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }
