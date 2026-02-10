@@ -109,37 +109,40 @@ const Feed = () => {
 
   useEffect(() => {
     document.title = 'Feed';
-    setlinkFrom('/feed')
+    setlinkFrom('/feed');
+  
     const fetchUserData = async () => {
       try {
         if (user && user.uid) {
           const userRef = doc(db, 'Users', user && user.uid);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
-            setUserData(userSnap.data())
+            setUserData(userSnap.data());
           }
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-    }
-    fetchUserData()
-
-    const getPosts = async () => {
+    };
+  
+    fetchUserData();
+  
+    const init = async () => {
       try {
         const posts = await fetchPosts();
         setPosts(posts);
+        await fetchAnnouncement();
       } catch (error) {
-        // Handle error if fetchPosts() fails
-        console.error('Error setting posts:', error);
-        setPosts([]);
+        console.error(error);
+      } finally {
+        setLoading(false); // Always stop loader
       }
     };
-
-    getPosts();
-    fetchAnnouncement();
+  
+    init();
     window.scrollTo(0, 0);
   }, [document.title, linkFrom]);
+  
 
   const hasViewedAnnouce = async () => {
     setIsShowModal(false)
@@ -156,12 +159,19 @@ const Feed = () => {
   return (
     <div className={`${isShowModal ? ' overflow-hidden' : ' overflow-y-auto'} bg-sky-50 dark:bg-slate-950 w-full pb-[78px] md:pb-0 md:pl-[140px] pt-[93px]`}>
       {!isScrollingDown && <TopNav>
-        <div className=' w-full flex items-center justify-start'>
-          <Link to='/'>
-            <img src={openbook} alt="PQ Hub Feed" className='w-[33px] h-[33px] cursor-pointer' />
-          </Link>
-          <h2 className='text-lgtext-white ml-3 font-medium truncate'>PQ Hub - Feed</h2>
-        </div>
+        <div className="w-full flex items-center justify-start">
+            <Link to="/">
+              <img
+                src={openbook}
+                alt="PQ Hub Feed"
+                className="w-[36px] h-[36px] cursor-pointer rounded-lg ring-2 ring-blue-500/30"
+              />
+            </Link>
+            <div className="ml-3">
+              <h2 className="text-base md:text-lg text-white font-semibold tracking-wide">PQ Hub</h2>
+              <p className="text-[11px] text-white/80 -mt-0.5">FUBK study community</p>
+            </div>
+          </div>
         <div>
           <Tooltip title='Search' arrow enterDelay={400}>
             <Link to='/search' className=' scale-95 md:scale-100 cursor-pointer md:w-full w-10 max-md:h-10 mr-3 sm:mr-1.5 md:mr-0 flex items-center bg-sky-50 text-slate-900 dark:text-slate-100 dark:bg-slate-900 p-2 justify-center gap-x-2 rounded-full px-5 -ml-2'>
